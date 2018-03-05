@@ -1,3 +1,10 @@
 Caltech CS2 Assignment 9: Othello
 
+A simple Othello implementation
+
+Contributors:
+
+Jagath Vytheeswaran
+Hyung Ju Suh (Terry)
+
 See [assignment9_part1.html](http://htmlpreview.github.io/?https://github.com/caltechcs2/othello/blob/master/assignment9_part1.html) and [assignment9_part2.html](http://htmlpreview.github.io/?https://github.com/caltechcs2/othello/blob/master/assignment9_part2.html)
