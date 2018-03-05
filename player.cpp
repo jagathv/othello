@@ -44,7 +44,6 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */
-     Move *ret = new Move(0, 0);
      Side opsid;
      if (sid == WHITE) {
        opsid = BLACK;
@@ -52,18 +51,63 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
        opsid = WHITE;
      }
      b->doMove(opponentsMove, opsid);
-     for (size_t i = 0; i < 8; i++) {
-       for (size_t j = 0; j < 8; j++) {
-         ret->setX(i);
-         ret->setY(j);
-         if (b->checkMove(ret, sid)) {
+     Move *ret = find_best_move(b);
+     b->doMove(ret, sid);
+     return ret;
+     // This code was for the naiive player implementation
+     // for (size_t i = 0; i < 8; i++) {
+     //   for (size_t j = 0; j < 8; j++) {
+     //     ret->setX(i);
+     //     ret->setY(j);
+     //     if (b->checkMove(ret, sid)) {
+     //
+     //       b->doMove(ret, sid);
+     //       return ret;
+     //     }
+     //   }
+     // }
 
-           b->doMove(ret, sid);
-           return ret;
-         }
-       }
-     }
-     // if (!b->hasMoves(sid)) {
-    return nullptr;
-  // }
+    // return nullptr;
+
+}
+
+int Player::calculate_hueristic(Board *b, Move m) {
+  Board *temp = b->copy();
+  int x = m.getX();
+  int y = m.getY();
+  temp->doMove(&m, sid);
+  int score = temp->countWhite() - temp->countBlack();
+  if (sid == BLACK) {
+    score *= -1;
+  }
+  if ((x == 0 || x == 7) && (y == 0 || y == 7)) {
+    score *= 3;
+  }
+  if (((x == 1 || x == 6) && (y == 0 || y == 7)) || ((y == 1 || y == 6) && (x == 0 || x == 7))) {
+    score *= -3;
+  }
+  return score;
+}
+
+Move* Player::find_best_move(Board *b) {
+  int max = -999999;
+  Move *ret = new Move(0, 0);
+  Move m(0, 0);
+  for (size_t i = 0; i < 8; i++) {
+    for (size_t j = 0; j < 8; j++) {
+      m.setX(i);
+      m.setY(j);
+
+      if (b->checkMove(&m, sid)) {
+        int score = calculate_hueristic(b, m);
+        std::cerr << score << '\n';
+        if (max < score) {
+          max = score;
+          ret->setX(i);
+          ret->setY(j);
+        }
+      }
+    }
+  }
+  return ret;
 }
