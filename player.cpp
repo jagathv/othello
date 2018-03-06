@@ -1,5 +1,5 @@
 #include "player.hpp"
-
+#include <vector>
 /*
  * Constructor for the player; initialize everything here. The side your AI is
  * on (BLACK or WHITE) is passed in as "side". The constructor must finish
@@ -44,6 +44,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's opponents move before calculating your own move
      */
+     Move* ret = nullptr;
      Side opsid;
      if (sid == WHITE) {
        opsid = BLACK;
@@ -51,9 +52,38 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
        opsid = WHITE;
      }
      b->doMove(opponentsMove, opsid);
+     // Move *ret = find_best_move(b);
+     // b->doMove(ret, sid);
+     if (testingMinimax) {
+     std::vector<Move*> possible_moves;
+     // std::vector<int> scores;
+     for (size_t i = 0; i < 8; i++) {
+       for (size_t j = 0; j < 8; j++) {
+         Move *temp = new Move(i, j);
+         if (b->checkMove(temp, sid)) {
+           possible_moves.push_back(temp);
+           // scores.push_back(0);
+         }
+       }
+     }
+     int maxi = -99999;
+     for (size_t k = 0; k < possible_moves.size(); k++) {
+       Board *temp_board = b->copy();
+       int scrr = calculate_hueristic(temp_board, *possible_moves[k], 1);
+       temp_board->doMove(possible_moves[k], sid);
+       if (maxi < minimax(temp_board, 2, 1, scrr)) {
+         maxi = minimax(temp_board, 2, 1, scrr);
+         ret = possible_moves[k];
+       }
+     }
+     b->doMove(ret, sid);
+     return ret;
+   }
+   else {
      Move *ret = find_best_move(b);
      b->doMove(ret, sid);
      return ret;
+   }
      // This code was for the naiive player implementation
      // for (size_t i = 0; i < 8; i++) {
      //   for (size_t j = 0; j < 8; j++) {
@@ -71,26 +101,80 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 
 }
 
-int Player::calculate_hueristic(Board *b, Move m) {
+int Player::minimax(Board *node, int depth, int ply, int scor) {
+  Side temp_side = sid;
+  if (ply == -1) {
+    if (sid == WHITE) {
+      temp_side = BLACK;
+    } else {
+      temp_side = WHITE;
+    }
+  }
+
+  if (node->isDone() || depth <= 0) {
+
+    return scor * ply;
+  }
+  int alpha = -999;
+  std::vector<Move *> move_vec;
+  for (size_t i = 0; i < 8; i++) {
+    for (size_t j = 0; j < 8; j++) {
+      Move *temp = new Move(i, j);
+      if (node->checkMove(temp, temp_side)) {
+        move_vec.push_back(temp);
+      }
+    }
+  }
+  for (size_t k = 0; k < move_vec.size(); k++) {
+    Board *temp_board = node->copy();
+    int h = calculate_hueristic(temp_board, *move_vec[k], ply);
+    temp_board->doMove(move_vec[k], temp_side);
+    alpha = max(alpha, -minimax(temp_board, depth-1, -ply, h));
+  }
+  return alpha;
+}
+
+int Player::no_move_hueristic(Board *b) {
+  int score = b->countWhite() - b->countBlack();
+  return score;
+}
+
+int Player::calculate_hueristic(Board *b, Move m, int ply) {
   Board *temp = b->copy();
   int x = m.getX();
   int y = m.getY();
+  if (ply == 1) {
   temp->doMove(&m, sid);
+  } else {
+    if (sid == BLACK) {
+      temp->doMove(&m, WHITE);
+    } else {
+      temp->doMove(&m, BLACK);
+    }
+  }
   int score = temp->countWhite() - temp->countBlack();
   if (sid == BLACK) {
     score *= -1;
   }
   if ((x == 0 || x == 7) && (y == 0 || y == 7)) {
-    score *= 3;
+    if (ply == 1) {
+      score += abs(score)/2;
+    } else {
+      score -= abs(score)/2;
+    }
   }
   if (((x == 1 || x == 6) && (y == 0 || y == 7)) || ((y == 1 || y == 6) && (x == 0 || x == 7))) {
-    score *= -3;
+      if (ply == 1) {
+        score -= abs(score)/2;
+      } else {
+        score += abs(score)/2;
+      }
   }
   return score;
 }
 
 Move* Player::find_best_move(Board *b) {
-  int max = -999999;
+  int max = -9999999;
   Move *ret = new Move(0, 0);
   Move m(0, 0);
   for (size_t i = 0; i < 8; i++) {
@@ -99,8 +183,8 @@ Move* Player::find_best_move(Board *b) {
       m.setY(j);
 
       if (b->checkMove(&m, sid)) {
-        int score = calculate_hueristic(b, m);
-        std::cerr << score << '\n';
+        int score = calculate_hueristic(b, m, 1);
+        // std::cerr << score << '\n';
         if (max < score) {
           max = score;
           ret->setX(i);

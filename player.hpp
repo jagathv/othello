@@ -14,7 +14,9 @@ public:
 
     Move *doMove(Move *opponentsMove, int msLeft);
     Move *find_best_move(Board *b);
-    int calculate_hueristic(Board *b, Move m);
+    int calculate_hueristic(Board *b, Move m, int ply);
+    int no_move_hueristic(Board *b);
+    int minimax(Board *node, int depth, int ply, int scor);
 
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
