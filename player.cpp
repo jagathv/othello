@@ -52,17 +52,13 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
        opsid = WHITE;
      }
      b->doMove(opponentsMove, opsid);
-     // Move *ret = find_best_move(b);
-     // b->doMove(ret, sid);
-     if (testingMinimax) {
+     // if (testingMinimax) {
      std::vector<Move*> possible_moves;
-     // std::vector<int> scores;
      for (size_t i = 0; i < 8; i++) {
        for (size_t j = 0; j < 8; j++) {
          Move *temp = new Move(i, j);
          if (b->checkMove(temp, sid)) {
            possible_moves.push_back(temp);
-           // scores.push_back(0);
          }
        }
      }
@@ -71,6 +67,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
        Board *temp_board = b->copy();
        int scrr = calculate_hueristic(temp_board, *possible_moves[k], 1);
        temp_board->doMove(possible_moves[k], sid);
+       std::cerr << possible_moves[k]->getX() << " " << possible_moves[k]->getY() << '\n';
        if (maxi < minimax(temp_board, 2, 1, scrr)) {
          maxi = minimax(temp_board, 2, 1, scrr);
          ret = possible_moves[k];
@@ -79,11 +76,11 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      b->doMove(ret, sid);
      return ret;
    }
-   else {
-     Move *ret = find_best_move(b);
-     b->doMove(ret, sid);
-     return ret;
-   }
+   // else {
+   //   Move *ret = find_best_move(b);
+   //   b->doMove(ret, sid);
+   //   return ret;
+   // }
      // This code was for the naiive player implementation
      // for (size_t i = 0; i < 8; i++) {
      //   for (size_t j = 0; j < 8; j++) {
@@ -99,7 +96,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 
     // return nullptr;
 
-}
+// }
 
 int Player::minimax(Board *node, int depth, int ply, int scor) {
   Side temp_side = sid;
@@ -140,21 +137,42 @@ int Player::no_move_hueristic(Board *b) {
 }
 
 int Player::calculate_hueristic(Board *b, Move m, int ply) {
+  Side tempsid = sid;
+  if (ply == -1) {
+    if (sid == WHITE) {
+      tempsid = BLACK;
+    } else {
+      tempsid = WHITE;
+    }
+  }
   Board *temp = b->copy();
   int x = m.getX();
   int y = m.getY();
-  if (ply == 1) {
-  temp->doMove(&m, sid);
-  } else {
-    if (sid == BLACK) {
-      temp->doMove(&m, WHITE);
-    } else {
-      temp->doMove(&m, BLACK);
+  // if (ply == 1) {
+  // temp->doMove(&m, sid);
+  // } else {
+  //   if (sid == BLACK) {
+  //     temp->doMove(&m, WHITE);
+  //   } else {
+  //     temp->doMove(&m, BLACK);
+  //   }
+  // }
+  temp->doMove(&m, tempsid);
+  // int score = temp->countWhite() - temp->countBlack();
+  // if (tempsid == BLACK) {
+    // score *= -1;
+  // }
+  int score;
+  if (tempsid == sid) {
+    score = temp->countWhite() - temp->countBlack();
+    if (tempsid == BLACK) {
+      score *= -1;
     }
-  }
-  int score = temp->countWhite() - temp->countBlack();
-  if (sid == BLACK) {
-    score *= -1;
+  } else {
+    score = temp->countWhite() - temp->countBlack();
+    if (tempsid == WHITE) {
+      score *= -1;
+    }
   }
   if ((x == 0 || x == 7) && (y == 0 || y == 7)) {
     if (ply == 1) {
