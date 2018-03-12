@@ -68,8 +68,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
        int scrr = calculate_hueristic(temp_board, *possible_moves[k], 1);
        temp_board->doMove(possible_moves[k], sid);
        std::cerr << possible_moves[k]->getX() << " " << possible_moves[k]->getY() << '\n';
-       if (maxi < minimax(temp_board, 2, 1, scrr)) {
-         maxi = minimax(temp_board, 2, 1, scrr);
+       if (maxi < minimax(temp_board, 4, 1, scrr)) {
+         maxi = minimax(temp_board, 4, 1, scrr);
          ret = possible_moves[k];
        }
      }
@@ -193,7 +193,7 @@ int Player::calculate_hueristic(Board *b, Move m, int ply) {
 
 Move* Player::find_best_move(Board *b) {
   int max = -9999999;
-  Move *ret = new Move(0, 0);
+  Move *ret = nullptr;
   Move m(0, 0);
   for (size_t i = 0; i < 8; i++) {
     for (size_t j = 0; j < 8; j++) {
