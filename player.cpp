@@ -68,8 +68,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
        int scrr = calculate_hueristic(temp_board, *possible_moves[k], 1);
        temp_board->doMove(possible_moves[k], sid);
        std::cerr << possible_moves[k]->getX() << " " << possible_moves[k]->getY() << '\n';
-       if (maxi < minimax(temp_board, 3, 1, scrr)) {
-         maxi = minimax(temp_board, 3, 1, scrr);
+       if (maxi < minimax(temp_board, 2, 1, scrr)) {
+         maxi = minimax(temp_board, 2, 1, scrr);
          ret = possible_moves[k];
        }
      }
@@ -239,6 +239,34 @@ int Player::calculate_hueristic(Board *b, Move m, int ply) {
           }
         }
       }
+    }
+  }
+  int black_moves = 0;
+  int white_moves = 0;
+  for (size_t i = 0; i < 8; i++) {
+    for (size_t j = 0; j < 8; j++) {
+      Move *mev = new Move(i, j);
+      if (temp->checkMove(mev, BLACK) ){
+        black_moves++;
+      }
+      if (temp->checkMove(mev, WHITE)) {
+        white_moves++;
+      }
+    }
+    /* code */
+  }
+  int total = 64 - temp->countBlack() - temp->countWhite();
+  if (ply == 1) {
+    if (sid == WHITE) {
+      score -= (black_moves / (total+1)) * abs(score) ;
+    } else {
+      score -= (white_moves / (total+1)) * abs(score) ;
+    }
+  } else {
+    if (tempsid == WHITE) {
+      score += (black_moves / (total+1)) * abs(score)  ;
+    } else {
+      score += (white_moves / (total+1)) * abs(score) ;
     }
   }
   return score;
