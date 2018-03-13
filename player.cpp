@@ -16,7 +16,7 @@ Player::Player(Side side) {
      */
      sid = side;
      b = new Board();
-
+     stables = new Board();
 }
 
 /*
@@ -68,12 +68,26 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
        int scrr = calculate_hueristic(temp_board, *possible_moves[k], 1);
        temp_board->doMove(possible_moves[k], sid);
        std::cerr << possible_moves[k]->getX() << " " << possible_moves[k]->getY() << '\n';
-       if (maxi < minimax(temp_board, 4, 1, scrr)) {
-         maxi = minimax(temp_board, 4, 1, scrr);
+       if (maxi < minimax(temp_board, 3, 1, scrr)) {
+         maxi = minimax(temp_board, 3, 1, scrr);
          ret = possible_moves[k];
        }
      }
      b->doMove(ret, sid);
+     int xx = ret->getX();
+     int yy = ret->getY();
+     if ((xx == 0 || xx == 7) && (yy == 0 || yy == 7)) {
+       stables->set(sid, xx, yy);
+     }
+     for (int i = -1; i < 2; i++) {
+       for (int j = -1; j < 2; j++) {
+         if (stables->onBoard(xx + i, yy + j)) {
+           if (stables->get(sid, xx+i, yy+j)) {
+             stables->set(sid, xx, yy);
+           }
+         }
+       }
+     }
      return ret;
    }
    // else {
@@ -162,31 +176,70 @@ int Player::calculate_hueristic(Board *b, Move m, int ply) {
   // if (tempsid == BLACK) {
     // score *= -1;
   // }
+  int white_moves = 0;
+  int black_moves = 0;
+  for (size_t i = 0; i < 8; i++) {
+    for (size_t j = 0; j < 8; j++) {
+      Move *temporary_move = new Move(i, j);
+      if (temp->checkMove(temporary_move, WHITE)) {
+        white_moves++;
+      }
+      if (temp->checkMove(temporary_move, BLACK)) {
+        black_moves++;
+      }
+    }
+  }
   int score;
+  // int total = 64 - temp->countBlack() - temp->countWhite();
   if (tempsid == sid) {
     score = temp->countWhite() - temp->countBlack();
     if (tempsid == BLACK) {
       score *= -1;
+      // score -= (white_moves / 15) * abs(score);
+    } else {
+      // score -= (black_moves / 15) * abs(score);
     }
   } else {
     score = temp->countWhite() - temp->countBlack();
     if (tempsid == WHITE) {
       score *= -1;
+      // score += (black_moves / 15) * abs(score);
+    } else {
+      // score += (white_moves / 15) * abs(score);
     }
   }
   if ((x == 0 || x == 7) && (y == 0 || y == 7)) {
     if (ply == 1) {
-      score += abs(score)/2;
+      score +=abs(score)/2;
     } else {
       score -= abs(score)/2;
     }
   }
+  // bool edgepenalty = false;
+  // int penalty = abs(score)/2;
   if (((x == 1 || x == 6) && (y == 0 || y == 7)) || ((y == 1 || y == 6) && (x == 0 || x == 7))) {
       if (ply == 1) {
         score -= abs(score)/2;
       } else {
         score += abs(score)/2;
       }
+      // edgepenalty = true;
+  }
+  int xx = m.getX();
+  int yy = m.getY();
+  for (int i = -1; i < 2; i++) {
+    for (int j = -1; j < 2; j++) {
+      if (stables->onBoard(xx + i, yy + j)) {
+        if (stables->get(tempsid, xx+i, yy+j)) {
+          std::cerr << "error here" << '\n';
+          if (ply == 1) {
+            score += abs(score) / 4;
+          } else {
+            score -= abs(score) / 4;
+          }
+        }
+      }
+    }
   }
   return score;
 }

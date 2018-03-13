@@ -22,6 +22,7 @@ public:
     bool testingMinimax;
     Board *b;
     Side sid;
+    Board *stables;
 };
 
 #endif
