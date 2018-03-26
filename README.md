@@ -16,3 +16,5 @@ Then, Terry worked on adding mobility and I worked on adding stable disk recogni
 To make our bot tournament-ready, we changed our hueristic to something that scaled rewards based on score and made sure that corners would be rewarding no matter what (and pieces adjacent to edges would be bad no matter what). I realized that even that is a bit of a poor hueristic (as pieces adjacent to corners are stable and therefore quite good if you have the corners already), so I added stable disks (you can see them in commit e8b02b3) and Terry added mobility (also in commit e8b02b3). While the implementations did indeed recognize the number of free spaces/stable disks, we couldn't tune their contributions to the overall score well enough to make them better than our original bot with the simple improved hueristic and minimax, so we're not using them for tournament.
 
 (Note - "I" refers to Jagath)
+
+Test commit
